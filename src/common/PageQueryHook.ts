@@ -104,9 +104,9 @@ export function usePageQuery<E>(
         }
         return {
             data: page,
-            loading: false,
-            stale: false,
-            networkStatus: NetworkStatus.loading,
+            loading: listResultRef.value.loading,
+            stale: listResultRef.value.stale,
+            networkStatus: listResultRef.value.networkStatus,
             refetch: async () => {
                 await countResultRef.value.refetch();
                 listResultRef.value.refetch();
