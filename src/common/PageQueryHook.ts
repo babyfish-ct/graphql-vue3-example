@@ -80,7 +80,7 @@ export function usePageQuery<E>(
             fetchPolicy: optionsRef.value.fetchPolicy
         }
     });
-    const listResultRef = useSkipQuery(listOptionsRef);
+    const listResultRef = useSkipQuery<GraphQLRoot<E[]>>(listOptionsRef);
     const resultRef = computed<SkipQueryResult<Page<E> | undefined>>(() => {
         let page: Page<E> | undefined;
         if (countResultRef.value.data !== undefined && listResultRef.value.data !== undefined) {
@@ -98,7 +98,7 @@ export function usePageQuery<E>(
                     pageCount: pageCountRef.value ?? 0,
                     pageNo: actualPageNoRef.value ?? 0,
                     pageSize: optionsRef.value.pageSize,
-                    entities: listResultRef.value.data
+                    entities: unwrapRoot(listResultRef.value.data) ?? []
                 };
             }
         }
