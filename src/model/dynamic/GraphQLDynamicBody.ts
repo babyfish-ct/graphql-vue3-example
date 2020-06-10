@@ -1,42 +1,9 @@
-/*
- * The antd tree returns the selected keys like this
- * [
- *    'id',
- *    'name',
- *    'employees.id',
- *    'employees.name',
- *    'employees.gender',
- *    'employees.supervisor.id',
- *    'employees.supervisor.name',
- *    'employees.supervisor.gender'
- * ]
- * 
- * This method merge the paths and return the dynamic fetch structure of graphql, like this
- * 
- * `
- *     id
- *     name
- *     employees {
- *          id
- *          name
- *          gender
- *          supervisor {
- *              id
- *              name
- *              gender
- *          }
- *     }
- * `
- */
-export function createDynamicGraphQLBody(paths: string[]): string {
-    if (paths.length === 0) {
-        return "__typename";
+function indentString(count: number): string {
+    let result = "";
+    for (let i = count; i > 0; --i) {
+        result += "\t";
     }
-    const builder = new GraphQLNodeBuilder('');
-    for (const path of paths) {
-        builder.addChild(path);
-    }
-    return builder.build(0);
+    return result;
 }
 
 class GraphQLNodeBuilder {
@@ -95,10 +62,43 @@ class GraphQLNodeBuilder {
     }
 }
 
-function indentString(count: number): string {
-    let result = "";
-    for (let i = count; i > 0; --i) {
-        result += "\t";
+/*
+ * The antd tree returns the selected keys like this
+ * [
+ *    'id',
+ *    'name',
+ *    'employees.id',
+ *    'employees.name',
+ *    'employees.gender',
+ *    'employees.supervisor.id',
+ *    'employees.supervisor.name',
+ *    'employees.supervisor.gender'
+ * ]
+ * 
+ * This method merge the paths and return the dynamic fetch structure of graphql, like this
+ * 
+ * `
+ *     id
+ *     name
+ *     employees {
+ *          id
+ *          name
+ *          gender
+ *          supervisor {
+ *              id
+ *              name
+ *              gender
+ *          }
+ *     }
+ * `
+ */
+export function createDynamicGraphQLBody(paths: string[]): string {
+    if (paths.length === 0) {
+        return "__typename";
     }
-    return result;
+    const builder = new GraphQLNodeBuilder('');
+    for (const path of paths) {
+        builder.addChild(path);
+    }
+    return builder.build(0);
 }

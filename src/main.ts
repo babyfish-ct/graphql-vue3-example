@@ -1,9 +1,8 @@
 import Vue from 'vue';
-
-import router from './router';
 import VueCompositionApi from '@vue/composition-api';
 import Antd from 'ant-design-vue';
 import 'ant-design-vue/dist/antd.css';
+import { router } from './router';
 import App from './App';
 
 Vue.config.productionTip = false;

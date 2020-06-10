@@ -1,9 +1,9 @@
 import {VNode} from 'vue';
 
 export interface GraphQLTreeNode {
-    readonly key: string,
-    readonly title: VNode | string,
-    readonly children?: GraphQLTreeNode[]
+    readonly key: string;
+    readonly title: VNode | string;
+    readonly children?: GraphQLTreeNode[];
 }
 
 export const DEPARTMENT_BASE_TREE_NODES: GraphQLTreeNode[] = [
@@ -18,7 +18,7 @@ export const EMPLOYEE_BASE_TREE_NODES: GraphQLTreeNode[] = [
     { key: "salary", title: "Salary" }
 ];
 
-export function childGraphQLTreeNodes(keyPrefix: String, nodes: GraphQLTreeNode[]): GraphQLTreeNode[] {
+export function childGraphQLTreeNodes(keyPrefix: string, nodes: GraphQLTreeNode[]): GraphQLTreeNode[] {
     return nodes.map(
         node => ({...node, key: `${keyPrefix}.${node.key}`})
     );

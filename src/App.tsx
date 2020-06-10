@@ -2,6 +2,7 @@ import { defineComponent, provide } from '@vue/composition-api';
 import AppView from './nav/AppView';
 import { ApolloClient, HttpLink, InMemoryCache } from 'apollo-boost';
 import { APOLLO_CLIENT_SYMBOL } from './common/ApolloHook';
+import './App.scss';
 
 export default defineComponent({
     

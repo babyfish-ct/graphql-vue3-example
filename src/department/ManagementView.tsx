@@ -4,6 +4,9 @@ import SpecificationView from './SpecificationView';
 import { DepartmentSpecification } from '@/model/DepartmentSpecification';
 import ApolloQueryResultView from '@/common/ApolloQueryResultView';
 import { usePageQuery, PageQueryOptions } from '@/common/PageQueryHook';
+import { createDynamicGraphQLBody } from '@/model/dynamic/GraphQLDynamicBody';
+import { Department } from '@/model/Department';
+import DepartmentView from './DepartmentView';
 
 export default defineComponent({
     setup() {
@@ -17,6 +20,7 @@ export default defineComponent({
         }
         const optionsRef = computed<PageQueryOptions>(() => {
             return {
+                skip: specificationRef.value.graphQLPaths.length === 0,
                 countQuery: gql`query($name: String) {
                     departmentCount(name: $name)
                 }`,
@@ -34,12 +38,7 @@ export default defineComponent({
                         limit: $limit,
                         offset: $offset
                     ) {
-                        id,
-                        name,
-                        employees {
-                            id,
-                            name
-                        }
+                        ${createDynamicGraphQLBody(specificationRef.value.graphQLPaths)}
                     }
                 }`,
                 pageNo: 1,
@@ -48,24 +47,38 @@ export default defineComponent({
                     name: specificationRef.value.name === "" ? 
                         undefined : 
                         specificationRef.value.name,
-                    sortedType: "ID",
-                    descending: false
+                    sortedType: specificationRef.value.sortedType,
+                    descending: specificationRef.value.descending
                 }
             };
         });
-        const resultRef = usePageQuery(optionsRef);
+        const resultRef = usePageQuery<Department>(optionsRef);
         return () => {
             return (
-                <a-layout layout="">
+                <a-layout>
                     <a-layout-sider theme="light" width={550}>
-                        <SpecificationView 
-                        value={specificationRef.value} 
-                        onInput={onSpecificationInput}/>
+                        <div style={{padding: '1rem'}}>
+                            <SpecificationView 
+                            value={specificationRef.value} 
+                            onInput={onSpecificationInput}/>
+                        </div>
                     </a-layout-sider>
-                    <a-layout-content>
-                        <ApolloQueryResultView value={resultRef.value}>
-                            {JSON.stringify(resultRef.value.data)}
-                        </ApolloQueryResultView>
+                    <a-layout-content class='background'>
+                        <div>
+                            <ApolloQueryResultView value={resultRef.value}>
+                                {
+                                    resultRef.value.data?.entities?.map(
+                                        (department, index) => {
+                                            return (
+                                                <DepartmentView 
+                                                key={index} 
+                                                department={department}/>
+                                            );
+                                        }
+                                    )
+                                }
+                            </ApolloQueryResultView>
+                        </div>
                     </a-layout-content>
                 </a-layout>
             );

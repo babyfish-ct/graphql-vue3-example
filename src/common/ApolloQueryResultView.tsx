@@ -20,7 +20,11 @@ export default defineComponent({
             if (defaultSlotFunc === undefined) {
                 return <div></div>
             }
-            return ctx.slots.default();
+            return (
+                <div>
+                    { ctx.slots.default() }
+                </div>
+            );
         };
     }
 });
