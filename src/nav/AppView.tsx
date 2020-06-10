@@ -9,7 +9,7 @@ export default defineComponent({
                 <a-layout>
                     <a-layout-header class={classes.header}>
                         <div class={classes['header-core']}>
-                            <div style={{width: 496}}>GraphQL React Example</div>
+                            <div style={{width: 496}}>GraphQL Vue3 Example</div>
                             <div style={{flex: 1}}>
                                 <MenuView/>
                             </div>

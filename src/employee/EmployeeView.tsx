@@ -1,21 +1,19 @@
-import { defineComponent, PropType, ref } from '@vue/composition-api';
-import { Department } from '@/model/Department';
+import { defineComponent, PropType, ref, createElement } from '@vue/composition-api';
 import { Employee } from '@/model/Employee';
-import { VNode } from 'vue/types/umd';
-import { useApolloClient } from '@/common/ApolloHook';
 import { gql, FetchResult } from 'apollo-boost';
+import { useApolloClient } from '@/common/ApolloHook';
 import { GraphQLRoot } from '@/model/graphql/GraphQLRoot';
 import { Modal } from 'ant-design-vue';
-import Value, {hasValue} from '@/common/Value';
-import EmployeeView from '@/employee/EmployeeView';
+import Value, { hasValue } from '@/common/Value';
+import DepartmentView from '@/department/DepartmentView';
 
 const LABEL_SPAN = 8;
 const VALUE_SPAN = 24 - LABEL_SPAN;
 
-export default defineComponent({
+const EmployeeView = defineComponent({
     props: {
-        department: {
-            type: Object as PropType<Department>,
+        employee: {
+            type: Object as PropType<Employee>,
             required: true
         },
         depth: {
@@ -24,10 +22,8 @@ export default defineComponent({
         }
     },
     setup(props, ctx) {
-
         const dialogRef = ref<boolean>(false);
-
-        const renderEmployee = (employee: Employee, index: number): VNode => {
+        const renderEmployee = (employee: Employee, index: number) => {
             return (
                 /*
                 * For real business projects, assign the object id to the 'key' is the best choice,
@@ -38,7 +34,14 @@ export default defineComponent({
                 * It's unnecessary to use the index in real business projects
                 */
                 <a-list-item key={index}>
-                    <EmployeeView employee={employee} depth={props.depth + 1}/>
+                    {
+                        createElement(EmployeeView, {
+                            props: {
+                                employee,
+                                depth: props.depth + 1
+                            }
+                        })
+                    }
                 </a-list-item>
             );
         };
@@ -50,20 +53,22 @@ export default defineComponent({
             try {
                 return await client.mutate({
                     mutation: gql`mutation($id: Long!) {
-                        deleteDepartment(id: $id)
+                        deleteEmployee(id: $id)
                     }`,
-                    variables: { id: props.department.id }
+                    variables: { id: props.employee.id }
                 });
             } finally {
                 deletingRef.value = false;
             }
         };
 
-        const onEditClick = () => { dialogRef.value = true };
+        const onEditClick = () => {
+            dialogRef.value = true;
+        };
         const onDialogClose = (saved: boolean) => {
             dialogRef.value = false;
             if (saved) {
-                ctx.emit('edit', props.department.id);
+                ctx.emit('edit', props.employee.id);
             }
         };
 
@@ -72,40 +77,40 @@ export default defineComponent({
             if (errors !== undefined) {
                 Modal.error({
                     title: "Error",
-                    content: <div>error</div>
+                    content: <div>errors</div>
                 });
             } else {
                 Modal.success({
                     title: "Success",
-                    content: "Departent has been deleted"
+                    content: "Employee has been deleted"
                 });
-                ctx.emit('edit', props.department.id);
+                ctx.emit('delete', props.employee.id);
             }
         };
 
         return () => {
             return (
-                <div style={{flex: 1}}>
+                <div style={{flex:1}}>
                     <a-card title={
                         <div style={{display: 'flex'}}>
                             <div style={{flex: 1}}>
-                                Department(Level-{props.depth})
+                                Employee(Level-{props.depth})
                             </div>
                             {
-                                props.depth === 1 && props.department.id === undefined ?
+                                props.depth === 1 && props.employee.id === undefined ?
                                 <div style={{fontSize: 12, fontWeight: 'normal'}}>
                                     Cannot edit/delete because there's no id
                                 </div> :
                                 undefined
                             }
                             {
-                                props.depth === 1 && props.department.id !== undefined?
+                                props.depth === 1 && props.employee.id !== undefined?
                                 <a-button-group>
                                     <a-button onClick={onEditClick}>
                                         <a-icon type='edit-outlined' />Edit
                                     </a-button>
                                     <a-popconfirm
-                                    title="Are you sure delete this department?"
+                                    title="Are you sure delete this employee?"
                                     onConfirm={onConfirmDelete}
                                     okText="Yes"
                                     cancelText="No">
@@ -126,23 +131,51 @@ export default defineComponent({
                         <div class={`object-view-${props.depth}`}>
                             <a-row>
                                 <a-col span={LABEL_SPAN}>Id</a-col>
-                                <a-col span={VALUE_SPAN}><Value value={props.department.id}/></a-col>
+                                <a-col span={VALUE_SPAN}><Value value={props.employee.id}/></a-col>
                             </a-row>
                             <a-row>
                                 <a-col span={LABEL_SPAN}>Name</a-col>
-                                <a-col span={VALUE_SPAN}><Value value={props.department.name}/></a-col>
+                                <a-col span={VALUE_SPAN}><Value value={props.employee.name}/></a-col>
                             </a-row>
                             <a-row>
-                                <a-col span={LABEL_SPAN}>Average salary</a-col>
-                                <a-col span={VALUE_SPAN}><Value value={props.department.avgSalary}/></a-col>
+                                <a-col span={LABEL_SPAN}>Gender</a-col>
+                                <a-col span={VALUE_SPAN}><Value value={props.employee.gender}/></a-col>
                             </a-row>
                             <a-row>
-                                <a-col span={hasValue(props.department.employees) ? 24 : LABEL_SPAN}>Employees</a-col>
-                                <a-col span={hasValue(props.department.employees) ? 24 : VALUE_SPAN}>
-                                    <Value value={props.department.employees}>
+                                <a-col span={LABEL_SPAN}>Salary</a-col>
+                                <a-col span={VALUE_SPAN}><Value value={props.employee.salary}/></a-col>
+                            </a-row>
+                            <a-row>
+                                <a-col span={hasValue(props.employee.department) ? 24 : LABEL_SPAN}>Department</a-col>
+                                <a-col span={hasValue(props.employee.department) ? 24 : VALUE_SPAN}>
+                                    <Value value={props.employee.department}>
+                                        <div style={{paddingLeft: '2rem'}}>
+                                            <DepartmentView 
+                                            department={props.employee.department!} 
+                                            depth={props.depth + 1}/>
+                                        </div>
+                                    </Value>
+                                </a-col>
+                            </a-row>
+                            <a-row>
+                                <a-col span={hasValue(props.employee.supervisor) ? 24 : LABEL_SPAN}>Supervisor</a-col>
+                                <a-col span={hasValue(props.employee.supervisor) ? 24 : VALUE_SPAN}>
+                                    <Value value={props.employee.supervisor}>
+                                        <div style={{paddingLeft: '2rem'}}>
+                                            <EmployeeView 
+                                            employee={props.employee.supervisor!} 
+                                            depth={props.depth + 1}/>
+                                        </div>
+                                    </Value>
+                                </a-col>
+                            </a-row>
+                            <a-row>
+                                <a-col span={hasValue(props.employee.subordinates) ? 24 : LABEL_SPAN}>Subordinates</a-col>
+                                <a-col span={hasValue(props.employee.subordinates) ? 24 : VALUE_SPAN}>
+                                    <Value value={props.employee.subordinates}>
                                         <div style={{paddingLeft: '2rem'}}>
                                             <a-list
-                                            dataSource={props.department.employees}
+                                            dataSource={props.employee.subordinates}
                                             renderItem={renderEmployee}/>
                                         </div>
                                     </Value>
@@ -152,18 +185,18 @@ export default defineComponent({
                     </a-card>
                     {
                         /*
-                         * The attribute 'visible' of EditDialog always is true,
-                         * but use the boolean flag to decide whether the dialog should be rendered or not.
-                         * 
-                         * This is because the parent componnement uses 
-                         * the current EmployeeView component in the loop,
-                         * don't always create the dialog for each EmployeeView,
-                         * just created it when it's necessary
-                         */
+                        * The attribute 'visible' of EditDialog always is true,
+                        * but use the boolean flag to decide whether the dialog should be rendered or not.
+                        * 
+                        * This is because the parent componnement uses 
+                        * the current EmployeeView component in the loop,
+                        * don't always create the dialog for each EmployeeView,
+                        * just created it when it's necessary
+                        */
                         // dialog ?
                         // <EditDialog 
                         // visible={true}
-                        // id={department.id}
+                        // id={employee.id}
                         // onClose={onDialogClose}/> : 
                         // undefined
                     }
@@ -172,3 +205,5 @@ export default defineComponent({
         }
     }
 });
+
+export default EmployeeView;
